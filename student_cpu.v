@@ -124,7 +124,31 @@ endmodule
 // FSM portion of Control Path (RegWrite, MemRead, MemWrite)
 module controlpathfsm(input wire rst, input wire clk, input wire newInstruction, input wire [5:0] opcode, 
                         output reg _RegWrite, output reg _MemRead, output reg _MemWrite);
-
+always @(clk) begin
+    case(opcode) //checkign for ctrl case
+        0: if (newInstruction == 0)
+            begin
+           _RegWrite = 1;  // AND, SUB, AND, OR
+           _MemRead  = 0;
+           _MemWrite = 0;
+            end
+        35: if (newInstruction == 0)
+            begin
+           _RegWrite = 1;  
+           _MemRead  = 1;
+           _MemWrite = 0; //LW
+           end
+        43: if (newInstruction == 0)
+            begin
+           _RegWrite = 0;  //SW
+           _MemRead  = 0;
+           _MemWrite = 1; 
+           end
+   default:_RegWrite = 0;  
+           _MemRead  = 0;
+           _MemWrite = 0; 
+    endcase
+end
 
 endmodule
 
@@ -132,7 +156,38 @@ endmodule
 module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg, 
                     output wire _RegDst, output wire _ALUSrc, output wire [1:0] _ALUOp);
 
+ always @ * begin    
 
+        if(opcode == 6'd0) //ALL R-Types, ADD, SUB, AND, and OR
+        begin
+
+        _MemToReg   = 1'd0;
+        _RegDst     = 1'd1;
+        _ALUSrc     = 1'd0;
+        _ALUOp      = 2'd2;
+       
+        end 
+
+        else if(opcode == 6'd35) //LW
+        begin
+        
+        _MemToReg   = 1'd1;
+        _RegDst     = 1'd0;
+        _ALUSrc     = 1'd1;
+        _ALUOp      = 2'd0;
+       
+        end 
+
+        else if(opcode == 6'd43) //SW
+        begin
+        
+        _MemToReg   = 1'd0; //don't care
+        _RegDst     = 1'd0; //don't care
+        _ALUSrc     = 1'd1;
+        _ALUOp      = 2'd0;
+       
+        end 
+    end 
                     
 endmodule
 
@@ -142,6 +197,3 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
 
 endmodule
 
-
-
-//testing 
