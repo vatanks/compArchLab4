@@ -142,3 +142,6 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
 
 endmodule
 
+
+
+//testing 
