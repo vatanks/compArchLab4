@@ -121,35 +121,69 @@ module datamem(input wire rst, input wire [6:0] memAddr, input wire memRead, inp
 
 endmodule
 
-// FSM portion of Control Path (RegWrite, MemRead, MemWrite)
+
+
+
+// FSM portion of Control Path (RegWrite, MemRead, MemWrite)     
 module controlpathfsm(input wire rst, input wire clk, input wire newInstruction, input wire [5:0] opcode, 
                         output reg _RegWrite, output reg _MemRead, output reg _MemWrite);
-always @(clk) begin
-    case(opcode) //checkign for ctrl case
-        0: if (newInstruction == 0)
-            begin
-           _RegWrite = 1;  // AND, SUB, AND, OR
-           _MemRead  = 0;
-           _MemWrite = 0;
-            end
-        35: if (newInstruction == 0)
-            begin
-           _RegWrite = 1;  
-           _MemRead  = 1;
-           _MemWrite = 0; //LW
-           end
-        43: if (newInstruction == 0)
-            begin
-           _RegWrite = 0;  //SW
-           _MemRead  = 0;
-           _MemWrite = 1; 
-           end
-   default:_RegWrite = 0;  
-           _MemRead  = 0;
-           _MemWrite = 0; 
-    endcase
-end
+   
+   
+   typedef enum reg [2:0] {A,B,C,D,E} state;
+   
+   state currentState, nextState;
+   
+   //
 
+	always @(posedge clock)
+	
+		if(reset) 					currentState <=A;
+		else if (newInstruction) 	currentState <=A;
+		else 						currentState <= nextState;
+		
+		case(curretnState)
+		
+			A:  _RegWrite = 0;
+				_MemRead  = 0;
+				_MemWrite = 0;
+				nextState = B;
+
+			B:	if (opcode==0)  // add, sub, and, or
+					begin
+						nextState = C;
+					end
+		
+				else if (opcode==35)  //lw 
+					begin
+						nextState = D;
+					end
+		
+				else if (opcode==43) //sw
+					begin
+						nextState = E;
+					end
+			
+			
+			C: //add, sub, and, or, slt
+				_RegWrite = 1;
+				_MemRead = 0;
+				_MemWrite = 0;
+				
+			D: //lw
+				_RegWrite = 1;
+				_MemRead = 1;
+				_MemWrite = 0;
+			
+			E: //sw
+				_RegWrite = 0;
+				_MemeRead = 0;
+				_MemWrite = 1;
+				
+			default:_RegWrite = 0;
+					_MemRead  = 0;
+					_MemWrite = 0;
+		endcase
+			                     
 endmodule
 
 // Combinational logic portion of Control Path (MemToReg, RegDst, ALUSrc, ALUOp)
@@ -190,6 +224,9 @@ module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg,
     end 
                     
 endmodule
+
+
+
 
 // The entire CPU without PC, instruction memory, and branch circuit
 module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, input wire newinstr);
