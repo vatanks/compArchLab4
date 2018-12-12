@@ -1,3 +1,5 @@
+`timescale 1ns/100ps
+`include "student_cpu.v"
 module cpu_tb;
 
 	reg Reset;			  	// Reset signal
@@ -6,24 +8,9 @@ module cpu_tb;
 
     reg Clk;				// Clock Signal
 
-
 	// CPU instantiation
 	mipscpu myCPU(Reset, Clk, instrWord, newInstr);
-    myCPU.myDataMem.memory[0] = 10; // a = 10
-    myCPU.myDataMem.memory[1] = 22; // b = 22
-    myCPU.myDataMem.memory[2] = 6; // c = 6
-    d = a + b – c ;
-    instrWord = lw $1, 0($0);
-    newInstr = 0;
-    #1 newInstr = 1;
-    #1 newInstr = 0;
-    #10;
-    instrWord = lw $2, 1($0);
-    newInstr = 0;
-    #1 newInstr = 1;
-    #1 newInstr = 0;
-    #10;
-    $display(“d = %d”, myCPU.myDataMem.memory[3]);
+    
     // Clock signal generator
     initial
         Clk = 0;
@@ -42,7 +29,15 @@ module cpu_tb;
     initial
     begin
     	// Add your testbench here
-    	
+        myCPU.myDataMem.memory[0] = 10;
+        myCPU.myDataMem.memory[1] = 22;
+        myCPU.myDataMem.memory[2] = 6;
+    	instrWord = 32'b100101_00000_00000_0000000000000000;
+        newInstr = 0;
+        #1 newInstr = 1;
+        #10;
+        $display("d = %d"myCPU.myDataMem.memory[0]);
+        #1 $finish;
     end
     
 
