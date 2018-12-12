@@ -135,63 +135,66 @@ endmodule
 module controlpathfsm(input wire rst, input wire clk, input wire newInstruction, input wire [5:0] opcode, 
                         output reg _RegWrite, output reg _MemRead, output reg _MemWrite);
    
-   
-   typedef enum reg [2:0] {A,B,C,D,E} state;
-   
-   state currentState, nextState;
-   
-   //
+	reg[2:0] state;
 
-	always @(posedge clock)
+	always @(posedge clk)
+	begin
 	
-		if(reset) 					currentState <=A;
-		else if (newInstruction) 	currentState <=A;
-		else 						currentState <= nextState;
+		if(rst) 					state <=0;
+		else if (newInstruction) 	state <=0;
+		//else 						currentState <= nextState;
 		
-		case(curretnState)
+		case(state)
 		
-			A:  _RegWrite = 0;
+			0:  begin
+				_RegWrite = 0;
 				_MemRead  = 0;
 				_MemWrite = 0;
-				nextState = B;
+				state = 1;
+				end
 
-			B:	if (opcode==0)  // add, sub, and, or
+			1:	if (opcode==0)  // add, sub, and, or
 					begin
-						nextState = C;
+						state = 2;
 					end
 		
 				else if (opcode==35)  //lw 
 					begin
-						nextState = D;
+						state = 3;
 					end
 		
 				else if (opcode==43) //sw
 					begin
-						nextState = E;
+						state = 4;
+					
 					end
-			
-			
-			C: //add, sub, and, or, slt
+						
+			2: //add, sub, and, or, slt
+				begin
 				_RegWrite = 1;
 				_MemRead = 0;
 				_MemWrite = 0;
+				end
 				
-			D: //lw
+			3: //lw
+				begin
 				_RegWrite = 1;
 				_MemRead = 1;
 				_MemWrite = 0;
-			
-			E: //sw
-				_RegWrite = 0;
-				_MemeRead = 0;
-				_MemWrite = 1;
+				end
 				
-			default:_RegWrite = 0;
-					_MemRead  = 0;
-					_MemWrite = 0;
-		endcase
+			4: //sw
+				begin
+				_RegWrite = 0;
+				_MemRead = 0;
+				_MemWrite = 1;
+				end
+		
+	endcase
+	end
 			                     
 endmodule
+
 
 // Combinational logic portion of Control Path (MemToReg, RegDst, ALUSrc, ALUOp)
 module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg, 
