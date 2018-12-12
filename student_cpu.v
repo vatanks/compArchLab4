@@ -12,6 +12,13 @@ module twotoonemux(input wire [31:0] input1, input wire [31:0] input2, input wir
 
 endmodule
 
+// 32-bit 2 to 1 Multiplexer
+module twotoonemux2(input wire [31:0] input1, input wire [31:0] input2, input wire sel, output wire [31:0] outputval);
+
+    assign outputval = (sel == 0) ? input1 : input2;
+
+endmodule
+
 // 5-bit 2 to 1 Multiplexer
 module twotoonemux_5bit(input wire [4:0] input1, input wire [4:0] input2, input wire sel, output wire [4:0] outputval);
 
@@ -237,13 +244,13 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
 
     
     // FSM Control Path
-    wire [5:0] opcode = instrword[31:26];
+    wire [5:0] FSMOpcode = instrword[31:26];
     reg _RegWrite;
     reg _MemRead;
     reg _MemWrite;
 
     // Combination Logic Portion of Control path
-    wire [5:0] opcode = instrword[31:26];
+    wire [5:0] CombOpcode = instrword[31:26];
     wire _MemToReg;
     wire _RegDst;
     wire _ALUSrc;
@@ -259,29 +266,29 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [31:0] outputVal;
     
     // 5-bit 2 to 1
-    wire [4:0] 5muxin1 = instrword[20:16];
-    wire [4:0] 5muxin2 = instrword[15:11];
-    wire [4:0] 5outval;
-    wire 5sel = _RegDst;
+    wire [4:0] fivemuxin1 = instrword[20:16];
+    wire [4:0] mux_5in2 = instrword[15:11];
+    wire [4:0] outval_5;
+    wire sel_5 = _RegDst;
         
     // Register File
     wire [4:0] readReg1 = instrword[25:21];
     wire [4:0] readReg2 = instrword[20:16];
-    wire [4:0] writeReg = 5outval;
+    wire [4:0] writeReg = outval_5;
     wire [31:0] writeData;
     wire regWrite = _RegWrite;
     reg [31:0] readData1;
     reg [31:0] readData2;
 
     // 32-bit 2 to 1 mux
-    wire [31:0] 32muxin1 = readData2;
-    wire [31:0] 32muxin2 = outputVal;
-    wire [31:0] 32outval;
-    wire 32sel = _ALUSrc;
+    wire [31:0] mux_32in1 = readData2;
+    wire [31:0] mux_32in2 = outputVal;
+    wire [31:0] outval_32;
+    wire sel_32 = _ALUSrc;
 
     // Arithmetic Logic Unit
     wire [31:0] op1 = readData1;
-    wire [31:0] op2 = 32outval;
+    wire [31:0] op2 = outval_32;
     wire [3:0] ctrl = aluctrl;
     wire [31:0] result;
 
@@ -298,21 +305,21 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [31:0] outputval;
     wire sel = _MemToReg;
 
-    // Write Data results
+    // ALU results
 
     assign writeData = outputval;
   
     // Module instantiations
     
     signextend signextend(inputVal, outputVal);
-    twotoonemux twotoonemux(32muxin1, 32muxin2, 32sel, 32outval);
+    twotoonemux twotoonemux(mux_32in1, mux_32in2, sel_32, outval_32);
     twotoonemux2 twotoonemux2(input1, input2, sel, outputval);
-    twootoonemux_5bit twotoonemux_5bit(5muxin1, 5muxin2, 5sel, 5outval);
+    twootoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5);
     alu alu(op1, op2, ctrl, result);
     alucontrol alucontrol(func, aluOp, aluctrl);
     registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2);
     datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData);
-    controlpathfsm controlpathfsm(rst, clk, newInstruction, opcode, _RegWrite, _MemRead, _MemWrite);
-    cotrolpathcomb controlpathcomb(opcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp);
+    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOopcode, _RegWrite, _MemRead, _MemWrite);
+    cotrolpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp);
  
 endmodule
