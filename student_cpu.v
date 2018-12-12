@@ -194,6 +194,88 @@ endmodule
 // The entire CPU without PC, instruction memory, and branch circuit
 module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, input wire newinstr);
 
+    wire rst = reset;   // Reset Signal
+    wire clk = clock;   // Clock Signal
+    wire newInstruction = newinstr;     // Used to signal a new instruction 
 
+    
+    // FSM Control Path
+    wire [5:0] opcode = instrword[31:26];
+    reg _RegWrite;
+    reg _MemRead;
+    reg _MemWrite;
+
+    // Combination Logic Portion of Control path
+    wire [5:0] opcode = instrword[31:26];
+    wire _MemToReg;
+    wire _RegDst;
+    wire _ALUSrc;
+    wire [1:0] _ALUOp;
+
+    // ALU Control
+    wire [5:0] func = instrword[5:0];
+    wire [1:0] aluOp = _ALUOp;
+    wire [3:0] aluctrl;
+
+    // Sign Extend 
+    wire [15:0] inputVal = instrword[15:0];
+    wire [31:0] outputVal;
+    
+    // 5-bit 2 to 1
+    wire [4:0] 5muxin1 = instrword[20:16];
+    wire [4:0] 5muxin2 = instrword[15:11];
+    wire [4:0] 5outval;
+    wire 5sel = _RegDst;
+        
+    // Register File
+    wire [4:0] readReg1 = instrword[25:21];
+    wire [4:0] readReg2 = instrword[20:16];
+    wire [4:0] writeReg = 5outval;
+    wire [31:0] writeData;
+    wire regWrite = _RegWrite;
+    reg [31:0] readData1;
+    reg [31:0] readData2;
+
+    // 32-bit 2 to 1 mux
+    wire [31:0] 32muxin1 = readData2;
+    wire [31:0] 32muxin2 = outputVal;
+    wire [31:0] 32outval;
+    wire 32sel = _ALUSrc;
+
+    // Arithmetic Logic Unit
+    wire [31:0] op1 = readData1;
+    wire [31:0] op2 = 32outval;
+    wire [3:0] ctrl = aluctrl;
+    wire [31:0] result;
+
+    // Data Memory
+    wire [6:0] memAddr;
+    wire memRead = _MemRead;
+    wire memWrite = _MemWrite;
+    wire [31:0] writeDataMem = readData2;
+    reg [31:0] readData;
+
+    // 32-bit 2 to 1 mux
+    wire [31:0] input1 = result;
+    wire [31:0] input2 = readData;
+    wire [31:0] outputval;
+    wire sel = _MemToReg;
+
+    // Write Data results
+
+    assign writeData = outputval;
+  
+    // Module instantiations
+    
+    signextend signextend(inputVal, outputVal);
+    twotoonemux twotoonemux(32muxin1, 32muxin2, 32sel, 32outval);
+    twotoonemux2 twotoonemux2(input1, input2, sel, outputval);
+    twootoonemux_5bit twotoonemux_5bit(5muxin1, 5muxin2, 5sel, 5outval);
+    alu alu(op1, op2, ctrl, result);
+    alucontrol alucontrol(func, aluOp, aluctrl);
+    registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2);
+    datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData);
+    controlpathfsm controlpathfsm(rst, clk, newInstruction, opcode, _RegWrite, _MemRead, _MemWrite);
+    cotrolpathcomb controlpathcomb(opcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp);
+ 
 endmodule
-
