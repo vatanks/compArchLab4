@@ -266,7 +266,7 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [31:0] outputVal;
     
     // 5-bit 2 to 1
-    wire [4:0] fivemuxin1 = instrword[20:16];
+    wire [4:0] mux_5in1 = instrword[20:16];
     wire [4:0] mux_5in2 = instrword[15:11];
     wire [4:0] outval_5;
     wire sel_5 = _RegDst;
