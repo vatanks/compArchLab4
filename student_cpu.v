@@ -207,38 +207,48 @@ endmodule
 module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg, 
                     output wire _RegDst, output wire _ALUSrc, output wire [1:0] _ALUOp);
 
+reg memtoreg;
+reg regdts;
+reg alusrc;
+reg aluop;
+
  always @ * begin    
 
         if(opcode == 6'd0) //ALL R-Types, ADD, SUB, AND, and OR
         begin
 
-        _MemToReg   = 1'd0;
-        _RegDst     = 1'd1;
-        _ALUSrc     = 1'd0;
-        _ALUOp      = 2'd2;
+        memtoreg   = 1'd0;
+        regdst     = 1'd1;
+        alusrc     = 1'd0;
+        aluop      = 2'd2;
        
         end 
 
         else if(opcode == 6'd35) //LW
         begin
         
-        _MemToReg   = 1'd1;
-        _RegDst     = 1'd0;
-        _ALUSrc     = 1'd1;
-        _ALUOp      = 2'd0;
+        memtoreg   = 1'd1;
+        regdst     = 1'd0;
+        alusrc     = 1'd1;
+        aluop      = 2'd0;
        
         end 
 
         else if(opcode == 6'd43) //SW
         begin
         
-        _MemToReg   = 1'd0; //don't care
-        _RegDst     = 1'd0; //don't care
-        _ALUSrc     = 1'd1;
-        _ALUOp      = 2'd0;
+        memtoreg   = 1'd0; //don't care
+        regdst     = 1'd0; //don't care
+        alusrc     = 1'd1;
+        aluop      = 2'd0;
        
         end 
-    end 
+    end
+
+assign  _MemToReg   = memtoreg;
+assign  _RegDst     = regdst;
+assign  _ALUSrc     = alusrc;
+assign  _ALUOp      = aluop;
                     
 endmodule
 
