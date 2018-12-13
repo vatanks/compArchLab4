@@ -103,7 +103,7 @@ module cpu_tb;
         #1 newInstr = 0; 
 
         // Display
-        #1 $display("Test 2: 10 - 22 - 6");
+        #1 $display("Test 2: 22 - 10 - 6");
         #1 $display("a = %d", myCPU.myDataMem.memory[0]);
         #1 $display("b = %d", myCPU.myDataMem.memory[1]);
         #1 $display("c = %d", myCPU.myDataMem.memory[2]);
