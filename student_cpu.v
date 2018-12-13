@@ -1,3 +1,12 @@
+//************************************************************************************************************
+//              Team: Atari VCS 
+//              Members: Shahnaz Vatank
+//                       Adrian Rodriguez                                                               
+//                       Steven Cardenas
+//                       Jazmin Munoz   
+//              Code: CPU.v
+//************************************************************************************************************
+
 // Sign extender
 module signextend(input wire [15:0] inputVal, output wire [31:0] outputVal);
 
