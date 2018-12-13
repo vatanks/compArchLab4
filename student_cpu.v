@@ -207,34 +207,34 @@ endmodule
 module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg, 
                     output wire _RegDst, output wire _ALUSrc, output wire [1:0] _ALUOp);
 
-reg memtoreg;
+reg memtoreg; //creating a register for all outputs to be able to manipulate values
 reg regdst;
 reg alusrc;
 reg[1:0] aluop;
 
- always @ * begin    
+ always @ * begin   // always all the time
 
-        if(opcode == 6'd0) //ALL R-Types, ADD, SUB, AND, and OR
+        if(opcode == 6'd0) //ALL R-Type instructions, i.e. ADD, SUB, AND, and OR
         begin
 
-        memtoreg   = 1'd0;
+        memtoreg   = 1'd0;  //this is the combinational control bit logic for R-Types
         regdst     = 1'd1;
         alusrc     = 1'd0;
         aluop      = 2'd2;
        
         end 
 
-        else if(opcode == 6'd35) //LW
+        else if(opcode == 6'd35) //for lW
         begin
         
-        memtoreg   = 1'd1;
+        memtoreg   = 1'd1;  //this is the combinational control bit logic for load word
         regdst     = 1'd0;
         alusrc     = 1'd1;
         aluop      = 2'd0;
        
         end 
 
-        else if(opcode == 6'd43) //SW
+        else if(opcode == 6'd43) //SW -- this is the control bit logic for store word
         begin
         
         memtoreg   = 1'd0; //don't care
@@ -245,15 +245,12 @@ reg[1:0] aluop;
         end 
     end
 
-assign  _MemToReg   = memtoreg;
+assign  _MemToReg   = memtoreg; //assigning the output wires to be the same as the registers
 assign  _RegDst     = regdst;
 assign  _ALUSrc     = alusrc;
 assign  _ALUOp      = aluop;
                     
 endmodule
-
-
-
 
 // The entire CPU without PC, instruction memory, and branch circuit
 module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, input wire newinstr);
