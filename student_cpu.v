@@ -38,9 +38,9 @@ endmodule
 // ALU Control
 module alucontrol(input wire [5:0] func, input wire [1:0] aluOp, output wire [3:0] aluctrl);
         
-		reg [3:0] aluSupport; // Value to output for operation
+		reg [3:0] aluSupport;
 		
-		always @ * begin   // Always do 
+		always @ * begin    
         if(((func == 6'd32)&&(aluOp == 2'd2)) || (aluOp == 2'd0)) begin
         
             aluSupport = 4'd2; // Add or LW/SW
@@ -142,55 +142,59 @@ endmodule
 module controlpathfsm(input wire rst, input wire clk, input wire newInstruction, input wire [5:0] opcode, 
                         output reg _RegWrite, output reg _MemRead, output reg _MemWrite);
    
-	reg[2:0] state;
-
-	always @(posedge clk)
-	begin
+	//register stores state value
+	reg[2:0] state;  
 	
-		if(rst) 					state <=0;
-		else if (newInstruction) 	state <=0;
-		//else 						currentState <= nextState;
+	//@ every positive clock edge prog. runs through specified case
+	always @(posedge clk)  
+	begin
+		
+		//state returns to zero if reset or new instruction recieved
+		if(rst) 		  state <=0;
+		else if (newInstruction)  state <=0;
+		
 		
 		case(state)
-		
+			
+			// clears reg values
 			0:  begin
 				_RegWrite = 0;
 				_MemRead  = 0;
 				_MemWrite = 0;
 				state = 1;
 				end
-
-			1:	if (opcode==0)  // add, sub, and, or
+			// poll for respective opcodes; non-valid opcodes die here
+			1:	if (opcode==0)  // add, sub, and, or sent to state 2
 					begin
 						state = 2;
 					end
 		
-				else if (opcode==35)  //lw 
+				else if (opcode==35)  //lw sent to state 3
 					begin
 						state = 3;
 					end
 		
-				else if (opcode==43) //sw
+				else if (opcode==43) //sw sent to state 4
 					begin
 						state = 4;
 					
 					end
 						
-			2: //add, sub, and, or, slt
+			2: //add, sub, and, or, slt reg values
 				begin
 				_RegWrite = 1;
 				_MemRead = 0;
 				_MemWrite = 0;
 				end
 				
-			3: //lw
+			3: //lw reg values
 				begin
 				_RegWrite = 1;
 				_MemRead = 1;
 				_MemWrite = 0;
 				end
 				
-			4: //sw
+			4: //sw reg values
 				begin
 				_RegWrite = 0;
 				_MemRead = 0;
@@ -207,34 +211,34 @@ endmodule
 module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg, 
                     output wire _RegDst, output wire _ALUSrc, output wire [1:0] _ALUOp);
 
-reg memtoreg; //creating a register for all outputs to be able to manipulate values
+reg memtoreg;
 reg regdst;
 reg alusrc;
 reg[1:0] aluop;
 
- always @ * begin   // always all the time
+ always @ * begin    
 
-        if(opcode == 6'd0) //ALL R-Type instructions, i.e. ADD, SUB, AND, and OR
+        if(opcode == 6'd0) //ALL R-Types, ADD, SUB, AND, and OR
         begin
 
-        memtoreg   = 1'd0;  //this is the combinational control bit logic for R-Types
+        memtoreg   = 1'd0;
         regdst     = 1'd1;
         alusrc     = 1'd0;
         aluop      = 2'd2;
        
         end 
 
-        else if(opcode == 6'd35) //for lW
+        else if(opcode == 6'd35) //LW
         begin
         
-        memtoreg   = 1'd1;  //this is the combinational control bit logic for load word
+        memtoreg   = 1'd1;
         regdst     = 1'd0;
         alusrc     = 1'd1;
         aluop      = 2'd0;
        
         end 
 
-        else if(opcode == 6'd43) //SW -- this is the control bit logic for store word
+        else if(opcode == 6'd43) //SW
         begin
         
         memtoreg   = 1'd0; //don't care
@@ -245,12 +249,15 @@ reg[1:0] aluop;
         end 
     end
 
-assign  _MemToReg   = memtoreg; //assigning the output wires to be the same as the registers
+assign  _MemToReg   = memtoreg;
 assign  _RegDst     = regdst;
 assign  _ALUSrc     = alusrc;
 assign  _ALUOp      = aluop;
                     
 endmodule
+
+
+
 
 // The entire CPU without PC, instruction memory, and branch circuit
 module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, input wire newinstr);
