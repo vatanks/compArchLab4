@@ -37,6 +37,9 @@ module cpu_tb;
         #1 newInstr = 1;
         #10;
         $display("d = %d"myCPU.myDataMem.memory[0]);
+        $display("d = %d"myCPU.myDataMem.memory[1]);
+        $display("d = %d"myCPU.myDataMem.memory[2]);
+        $display("d = %d"myCPU.myDataMem.memory[3]);
         #1 $finish;
     end
     
