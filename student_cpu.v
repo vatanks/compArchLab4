@@ -135,77 +135,67 @@ module datamem(input wire rst, input wire [6:0] memAddr, input wire memRead, inp
 
 endmodule
 
-
-
-
 // FSM portion of Control Path (RegWrite, MemRead, MemWrite)     
 module controlpathfsm(input wire rst, input wire clk, input wire newInstruction, input wire [5:0] opcode, 
                         output reg _RegWrite, output reg _MemRead, output reg _MemWrite);
    
-	//register stores state value
-	reg[2:0] state;  
+	reg[1:0] state; // State Indicator
 	
-	//@ every positive clock edge prog. runs through specified case
-	always @(posedge clk)  
+	always @(posedge rst)
+	begin
+		_RegWrite = 0;
+		_MemRead = 0;
+		_MemWrite = 0;
+	end
+	
+	always @(posedge newInstruction) // Reset FSM state to state 0
+	begin
+		state = 2'd0;
+        _RegWrite = 0;
+        _MemRead = 0;
+        _MemWrite = 0;
+	end
+	
+	always @(posedge clk)
 	begin
 		
-		//state returns to zero if reset or new instruction recieved
-		if(rst) 		  state <=0;
-		else if (newInstruction)  state <=0;
-		
-		
 		case(state)
-			
-			// clears reg values
-			0:  begin
-				_RegWrite = 0;
-				_MemRead  = 0;
-				_MemWrite = 0;
-				state = 1;
-				end
-			// poll for respective opcodes; non-valid opcodes die here
-			1:	if (opcode==0)  // add, sub, and, or sent to state 2
+
+			2'd0:	if (opcode==6'd0)  // add, sub, and, or
 					begin
-						state = 2;
+						_RegWrite = 1;
+						_MemRead = 0;
+						_MemWrite = 0;
+						state = 2'd1;
 					end
 		
-				else if (opcode==35)  //lw sent to state 3
+				else if (opcode==6'd35)  //lw 
 					begin
-						state = 3;
+						_MemRead = 1;					
+						#1 _RegWrite = 1; // This happens after in the write back stage
+						_MemWrite = 0;
+						state = 2'd1;
 					end
 		
-				else if (opcode==43) //sw sent to state 4
+				else if (opcode==6'd43) //sw
 					begin
-						state = 4;
+						_RegWrite = 0;
+						_MemRead = 0;
+						_MemWrite = 1;					
+						state = 2'd1;
 					
 					end
 						
-			2: //add, sub, and, or, slt reg values
+			4'd1: // Stay here until there is a new instruction
 				begin
-				_RegWrite = 1;
-				_MemRead = 0;
-				_MemWrite = 0;
+					state = 4'd1;
 				end
-				
-			3: //lw reg values
-				begin
-				_RegWrite = 1;
-				_MemRead = 1;
-				_MemWrite = 0;
-				end
-				
-			4: //sw reg values
-				begin
-				_RegWrite = 0;
-				_MemRead = 0;
-				_MemWrite = 1;
-				end
+			
 		
 	endcase
 	end
 			                     
 endmodule
-
 
 // Combinational logic portion of Control Path (MemToReg, RegDst, ALUSrc, ALUOp)
 module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg, 
@@ -256,15 +246,12 @@ assign  _ALUOp      = aluop;
                     
 endmodule
 
-
-
-
 // The entire CPU without PC, instruction memory, and branch circuit
 module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, input wire newinstr);
 
     wire rst = reset;   // Reset Signal
     wire clk = clock;   // Clock Signal
-    wire newInstruction = newinstr;     // Used to signal a new instruction 
+    wire newInstruction = newinstr;     // Used to signal a new instruction
 
     
     // FSM Control Path
@@ -294,12 +281,11 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [4:0] mux_5in2 = instrword[15:11];
     wire [4:0] outval_5;
     wire sel_5 = _RegDst;
-        
+
     // Register File
     wire [4:0] readReg1 = instrword[25:21];
     wire [4:0] readReg2 = instrword[20:16];
     wire [4:0] writeReg = outval_5;
-    wire [31:0] writeData;
     wire regWrite = _RegWrite;
     wire [31:0] readData1;
     wire [31:0] readData2;
@@ -317,7 +303,7 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [31:0] result;
 
     // Data Memory
-    wire [6:0] memAddr;
+    wire [6:0] memAddr = result;
     wire memRead = _MemRead;
     wire memWrite = _MemWrite;
     wire [31:0] writeDataMem = readData2;
@@ -326,24 +312,22 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     // 32-bit 2 to 1 mux
     wire [31:0] input1 = result;
     wire [31:0] input2 = readData;
-    wire [31:0] outputval;
+    wire [31:0] writeData;
     wire sel = _MemToReg;
 
     // ALU results
-
-    assign writeData = outputval;
   
     // Module instantiations
     
-    signextend signextend(inputVal, outputVal);
-    twotoonemux twotoonemux(mux_32in1, mux_32in2, sel_32, outval_32);
-    twotoonemux2 twotoonemux2(input1, input2, sel, outputval);
-    twotoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5);
-    alu alu(op1, op2, ctrl, result);
-    alucontrol alucontrol(func, aluOp, aluctrl);
-    registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2);
-    datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData);
-    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOpcode, _RegWrite, _MemRead, _MemWrite);
-    controlpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp);
+    signextend signextend(inputVal, outputVal); // 
+    twotoonemux twotoonemux(mux_32in1, mux_32in2, sel_32, outval_32); //
+    twotoonemux2 twotoonemux2(input1, input2, sel, writeData); // 
+    twotoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5); //
+    alu alu(op1, op2, ctrl, result); // 
+    alucontrol alucontrol(func, aluOp, aluctrl); //
+    registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2); //
+    datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData); //
+    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOpcode, _RegWrite, _MemRead, _MemWrite); //
+    controlpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp); //
  
 endmodule
