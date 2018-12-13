@@ -248,9 +248,9 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     
     // FSM Control Path
     wire [5:0] FSMOpcode = instrword[31:26];
-    reg _RegWrite;
-    reg _MemRead;
-    reg _MemWrite;
+    wire _RegWrite;
+    wire _MemRead;
+    wire _MemWrite;
 
     // Combination Logic Portion of Control path
     wire [5:0] CombOpcode = instrword[31:26];
@@ -280,8 +280,8 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [4:0] writeReg = outval_5;
     wire [31:0] writeData;
     wire regWrite = _RegWrite;
-    reg [31:0] readData1;
-    reg [31:0] readData2;
+    wire [31:0] readData1;
+    wire [31:0] readData2;
 
     // 32-bit 2 to 1 mux
     wire [31:0] mux_32in1 = readData2;
@@ -300,7 +300,7 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire memRead = _MemRead;
     wire memWrite = _MemWrite;
     wire [31:0] writeDataMem = readData2;
-    reg [31:0] readData;
+    wire [31:0] readData;
 
     // 32-bit 2 to 1 mux
     wire [31:0] input1 = result;
@@ -317,12 +317,12 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     signextend signextend(inputVal, outputVal);
     twotoonemux twotoonemux(mux_32in1, mux_32in2, sel_32, outval_32);
     twotoonemux2 twotoonemux2(input1, input2, sel, outputval);
-    twootoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5);
+    twotoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5);
     alu alu(op1, op2, ctrl, result);
     alucontrol alucontrol(func, aluOp, aluctrl);
     registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2);
     datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData);
-    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOopcode, _RegWrite, _MemRead, _MemWrite);
-    cotrolpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp);
+    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOpcode, _RegWrite, _MemRead, _MemWrite);
+    controlpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp);
  
 endmodule
