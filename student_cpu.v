@@ -208,9 +208,9 @@ module controlpathcomb(input wire [5:0] opcode, output wire _MemToReg,
                     output wire _RegDst, output wire _ALUSrc, output wire [1:0] _ALUOp);
 
 reg memtoreg;
-reg regdts;
+reg regdst;
 reg alusrc;
-reg aluop;
+reg[1:0] aluop;
 
  always @ * begin    
 
