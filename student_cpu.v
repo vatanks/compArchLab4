@@ -38,9 +38,9 @@ endmodule
 // ALU Control
 module alucontrol(input wire [5:0] func, input wire [1:0] aluOp, output wire [3:0] aluctrl);
         
-		reg [3:0] aluSupport;
+		reg [3:0] aluSupport; // Value to output for operation
 		
-		always @ * begin    
+		always @ * begin   // Always do 
         if(((func == 6'd32)&&(aluOp == 2'd2)) || (aluOp == 2'd0)) begin
         
             aluSupport = 4'd2; // Add or LW/SW
