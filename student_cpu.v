@@ -37,32 +37,39 @@ endmodule
 
 // ALU Control
 module alucontrol(input wire [5:0] func, input wire [1:0] aluOp, output wire [3:0] aluctrl);
-        always @ * begin    
+        
+		reg [3:0] aluSupport;
+		
+		always @ * begin    
         if(((func == 6'd32)&&(aluOp == 2'd2)) || (aluOp == 2'd0)) begin
         
-            aluctrl = 4'd2; // Add or LW/SW
+            aluSupport = 4'd2; // Add or LW/SW
     
         end else if ((func == 6'd34)&&(aluOp == 2'd2)) begin
         
-            aluctrl = 4'd6; // Subtract
+            aluSupport = 4'd6; // Subtract
         
         end else if ((func == 6'd36)&&(aluOp == 2'd2)) begin
         
-            aluctrl = 4'd0; // AND
+            aluSupport = 4'd0; // AND
         
         end else if ((func == 6'd37)&&(aluOp == 2'd2)) begin
         
-            aluctrl = 4'd1; // OR
+            aluSupport = 4'd1; // OR
         
         end else if ((func == 6'd39)&&(aluOp == 2'd2)) begin
         
-            aluctrl = 4'd12; // NOR
+            aluSupport = 4'd12; // NOR
         
         end else if ((func == 6'd42)&&(aluOp == 2'd2)) begin  
-            aluctrl = 4'd7;  // SLT
-        end              
+            aluSupport = 4'd7;  // SLT
+        end   
     end 
+	
+	assign aluctrl = aluSupport;		
+
 endmodule
+
 
 // Register File
 module registerfile(input wire rst, input wire [4:0] readReg1, input wire [4:0] readReg2, input wire [4:0] writeReg, 
