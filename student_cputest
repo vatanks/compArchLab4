@@ -28,43 +28,125 @@ module cpu_tb;
 	// Test bench
     initial
     begin
-    	// Add your testbench here
-        myCPU.myDataMem.memory[0] = 10;
-        myCPU.myDataMem.memory[1] = 22;
-        myCPU.myDataMem.memory[2] = 6;
-    	instrWord = 32'b100101_00000_00001_0000000000000000;
-        newInstr = 0;
+        // Test 1: d = a + b - c
+        
+        #1 Reset = 1;
+        #1 Reset = 0;
+        #1 myCPU.myDataMem.memory[0] = 10;
+        #1 myCPU.myDataMem.memory[1] = 22;
+        #1 myCPU.myDataMem.memory[2] = 6;
+        // lw $1, 0($0); 
+        #10 instrWord= 32'b100011_00000_00001_0000000000000000; 
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // lw $2, 1($0);
+        #10 instrWord= 32'b100011_00000_00010_0000000000000001;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // lw $3, 2($0);
+        #10 instrWord= 32'b100011_00000_00011_0000000000000010; 
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // add $4, $1, $2; a + b
+        #10 instrWord= 32'b000000_00001_00010_00100_00000_100000;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // sub $4, $4, $3; ( a + b ) - c
+        #10 instrWord= 32'b000000_00100_00011_00100_00000_100010;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // sw $4, 3($0)
+    	#10 instrWord = 32'b101011_00000_00100_0000000000000011;
         #1 newInstr = 1;
-        #1 newInstr = 0;
-        #10;
-    	instrWord = 32'b100101_00000_00010_0000000000000001;
-        newInstr = 0;
-        #1 newInstr = 1;
-        #1 newInstr = 0;
-        #10;
-    	instrWord = 32'b100101_00000_00011_0000000000000010;
-        newInstr = 0;
-        #1 newInstr = 1;
-        #1 newInstr = 0;
-        #10;
-    	instrWord = 32'b000000_00001_00010_00100_00000_100000;
-        newInstr = 0;
-        #1 newInstr = 1;
-        #1 newInstr = 0;
-        #10;
-    	instrWord = 32'b101011_00000_00010_0000000000000011;
-        newInstr = 0;
-        #1 newInstr = 1;
-        #1 newInstr = 0;
-        #10;
-        newInstr = 0;
+        #1 newInstr = 0; 
+        // Display
+        #1 $display("Test 1:");
+        #1 $display("a = %d", myCPU.myDataMem.memory[0]);
+        #1 $display("b = %d", myCPU.myDataMem.memory[1]);
+        #1 $display("c = %d", myCPU.myDataMem.memory[2]);
+        #1 $display("d = %d", myCPU.myDataMem.memory[3]);
+        
+        //*****************************************************
 
-        #1 $display("d = %d", myCPU.myDataMem.memory[0]);
-        #1 $display("d = %d", myCPU.myDataMem.memory[1]);
-        #1 $display("d = %d", myCPU.myDataMem.memory[2]);
+        // Test 2: d = b - a - c
+
+        #1 Reset = 1;
+        #1 Reset = 0;
+        #1 myCPU.myDataMem.memory[0] = 10;
+        #1 myCPU.myDataMem.memory[1] = 22;
+        #1 myCPU.myDataMem.memory[2] = 6;
+        // lw $1, 0($0); a
+        #10 instrWord= 32'b100011_00000_00001_0000000000000000; 
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // lw $2, 1($0); b
+        #10 instrWord= 32'b100011_00000_00010_0000000000000001;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // lw $3, 2($0); c
+        #10 instrWord= 32'b100011_00000_00011_0000000000000010; 
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // add $4, $1, $2; b - a
+        #10 instrWord= 32'b000000_00010_00001_00100_00000_100010;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // sub $4, $4, $3; ( b - a ) - c
+        #10 instrWord= 32'b000000_00100_00011_00100_00000_100010;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // sw $4, 3($0)
+    	#10 instrWord = 32'b101011_00000_00100_0000000000000011;
+        #1 newInstr = 1;
+        #1 newInstr = 0; 
+
+        // Display
+        #1 $display("Test 2:");
+        #1 $display("a = %d", myCPU.myDataMem.memory[0]);
+        #1 $display("b = %d", myCPU.myDataMem.memory[1]);
+        #1 $display("c = %d", myCPU.myDataMem.memory[2]);
+        #1 $display("d = %d", myCPU.myDataMem.memory[3]);
+
+        //*****************************************************
+
+        // Test 3: d = ( a & c ) | b
+
+        #1 Reset = 1;
+        #1 Reset = 0;
+        #1 myCPU.myDataMem.memory[0] = 10;
+        #1 myCPU.myDataMem.memory[1] = 22;
+        #1 myCPU.myDataMem.memory[2] = 6;
+        // lw $1, 0($0); a
+        #10 instrWord= 32'b100011_00000_00001_0000000000000000; 
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // lw $2, 1($0); b
+        #10 instrWord= 32'b100011_00000_00010_0000000000000001;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // lw $3, 2($0); c
+        #10 instrWord= 32'b100011_00000_00011_0000000000000010; 
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // AND $4, $1, $2; a & c
+        #10 instrWord= 32'b000000_00001_00011_00100_00000_100100;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // OR $4, $4, $3; ( a & c ) | b
+        #10 instrWord= 32'b000000_00100_00010_00100_00000_100101;
+        #1 newInstr=1;
+        #1 newInstr=0;
+        // sw $4, 3($0)
+    	#10 instrWord = 32'b101011_00000_00100_0000000000000011;
+        #1 newInstr = 1;
+        #1 newInstr = 0; 
+
+        // Display
+        #1 $display("Test 3:");
+        #1 $display("a = %d", myCPU.myDataMem.memory[0]);
+        #1 $display("b = %d", myCPU.myDataMem.memory[1]);
+        #1 $display("c = %d", myCPU.myDataMem.memory[2]);
         #1 $display("d = %d", myCPU.myDataMem.memory[3]);
         #1 $finish;
     end
-    
-
 endmodule
