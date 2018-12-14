@@ -4,7 +4,10 @@
 //                       Adrian Rodriguez                                                               
 //                       Steven Cardenas
 //                       Jazmin Munoz   
-//              Code: CPU.v
+//              Code: teamatarivcs_cpu.v
+//  		EE 4379 Computer Architecture                
+//  		Lab #4: CPU Data Path and Control Path                                  
+// 		Date: 12/14/2018                                                        
 //************************************************************************************************************
 
 // Sign extender
