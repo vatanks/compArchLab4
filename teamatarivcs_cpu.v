@@ -265,6 +265,7 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire clk = clock;   // Clock Signal
     wire newInstruction = newinstr;     // Used to signal a new instruction
 
+    // Initializations
     
     // FSM Control Path
     wire [5:0] FSMOpcode = instrword[31:26];
@@ -327,19 +328,17 @@ module mipscpu(input wire reset, input wire clock, input wire [31:0] instrword, 
     wire [31:0] writeData;
     wire sel = _MemToReg;
 
-    // ALU results
-  
     // Module instantiations
     
-    signextend signextend(inputVal, outputVal); // 
-    twotoonemux twotoonemux(mux_32in1, mux_32in2, sel_32, outval_32); //
-    twotoonemux2 twotoonemux2(input1, input2, sel, writeData); // 
-    twotoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5); //
-    alu alu(op1, op2, ctrl, result); // 
-    alucontrol alucontrol(func, aluOp, aluctrl); //
-    registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2); //
-    datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData); //
-    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOpcode, _RegWrite, _MemRead, _MemWrite); //
-    controlpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp); //
+    signextend signextend(inputVal, outputVal);  // sign extend module
+    twotoonemux twotoonemux(mux_32in1, mux_32in2, sel_32, outval_32);    // First 32-bit twotoonemux module
+    twotoonemux2 twotoonemux2(input1, input2, sel, writeData);   // 5-bit twotoonemux module
+    twotoonemux_5bit twotoonemux_5bit(mux_5in1, mux_5in2, sel_5, outval_5); // Second 32-bit twotoonemux module
+    alu alu(op1, op2, ctrl, result);    // Alu module 
+    alucontrol alucontrol(func, aluOp, aluctrl);    // Alu control module 
+    registerfile registerfile(rst, readReg1, readReg2, writeReg, writeData, regWrite, readData1, readData2);     // Register file module
+    datamem myDataMem(rst, memAddr, memRead, memWrite, writeDataMem, readData);     // Data Memory module
+    controlpathfsm controlpathfsm(rst, clk, newInstruction, FSMOpcode, _RegWrite, _MemRead, _MemWrite);     // Control Path FSM module
+    controlpathcomb controlpathcomb(CombOpcode, _MemToReg, _RegDst, _ALUSrc, _ALUOp); // Control Path Combinational Logic Module
  
 endmodule
