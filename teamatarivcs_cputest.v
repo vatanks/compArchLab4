@@ -80,7 +80,7 @@ module cpu_tb;
         #1 $display("d = %d", myCPU.myDataMem.memory[3]);        
         
         #1checkreg = (myCPU.myDataMem.memory[0] + myCPU.myDataMem.memory[1] - myCPU.myDataMem.memory[2]);
-        
+        // Checking if value is correct 
         if (checkreg == myCPU.myDataMem.memory[3]) begin
             $display("This output is correct : %d", checkreg);
             checkreg = 0;
@@ -129,7 +129,7 @@ module cpu_tb;
         #1 $display("d = %d", myCPU.myDataMem.memory[3]);
 
         #1checkreg = (myCPU.myDataMem.memory[1] - myCPU.myDataMem.memory[0] - myCPU.myDataMem.memory[2]);
-        
+        // Checking if value is correct 
         #1if (checkreg == myCPU.myDataMem.memory[3]) begin
             $display("This output is correct : %d", checkreg);
         end
@@ -176,8 +176,8 @@ module cpu_tb;
         #1 $display("d = %d", myCPU.myDataMem.memory[3]);
 
         checkreg = ((myCPU.myDataMem.memory[0] & myCPU.myDataMem.memory[2]) | myCPU.myDataMem.memory[1]);
-         
-       #1if (checkreg == myCPU.myDataMem.memory[3]) begin
+        // Checking if value is correct 
+        #1if (checkreg == myCPU.myDataMem.memory[3]) begin
             $display("This output is correct : %d", checkreg);
         end
         else $display("That output is not correct, this output is correct ---> %d", checkreg);
